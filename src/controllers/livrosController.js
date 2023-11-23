@@ -3,7 +3,7 @@ import livros from "../models/Livro.js";
 class LivroController {
     
     static listarLivro = (req, res) => {
-        livros.find({})
+        livros.find().populate('autor')
             .then(livros => { res.status(200).json(livros); })
             .catch(err => { console.error(err); });
     }
@@ -11,9 +11,9 @@ class LivroController {
     static listarLivroId = (req, res) => {
         const id = req.params.id;
 
-        livros.findById(id)
+        livros.findById(id).populate('autor', 'nome')
         .then(livro => { 
-            res.status(200).send(livro) 
+            res.status(200).send(livro); 
         })
         .catch(err => { 
             res.status(400).send({messaage:`${err} - falha ao listar o livro com ID ${id}`}); 
@@ -24,7 +24,9 @@ class LivroController {
         let livro = new livros(req.body);
 
         livro.save()
-            .then(livro => { res.status(201).send(livro.toJSON()) })
+            .then(livro => { 
+                res.status(201).send(livro.toJSON()); 
+            })
             .catch(err => { 
                 res.status(500).send({messaage:`${err} - falha ao cadastrar livro`}); 
             });
@@ -35,7 +37,7 @@ class LivroController {
 
         livros.findByIdAndUpdate(id, { $set: req.body })
         .then(livro => { 
-            res.status(200).send({message: 'Livro atualizado com sucesso'}) 
+            res.status(200).send({message: 'Livro atualizado com sucesso'}); 
         })
         .catch(err => { 
             res.status(500).send({messaage:`${err} - falha ao atualizar livro`}); 
@@ -47,12 +49,25 @@ class LivroController {
 
         livros.findByIdAndDelete(id, { $set: req.body })
         .then(livro => { 
-            res.status(200).send({message: 'Livro deletado com sucesso'}) 
+            res.status(200).send({message: 'Livro deletado com sucesso'});
         })
         .catch(err => { 
             res.status(500).send({messaage:`${err} - falha ao deletar livro`}); 
         });
     }
+
+    static listarLivroEditora = (req, res) => {
+        const editora = req.query.editora;
+
+        livros.find({'editora': editora})
+        .then(livros => { 
+            res.status(200).send(livros);
+        })
+        .catch(err => { 
+            res.status(500).send({messaage:`${err} - falha ao listar livro`}); 
+        });
+    }
+
 }
 
 export default LivroController;
